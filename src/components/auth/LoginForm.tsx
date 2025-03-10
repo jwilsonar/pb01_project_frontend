@@ -48,7 +48,7 @@ const LoginForm: React.FC = () => {
         setError('Credenciales inválidas');
       } else {
         toast.success('Inicio de sesión exitoso');
-        router.push('/empleados'); // Redirige al dashboard después del login exitoso
+        router.push('/'); // Redirige al dashboard después del login exitoso
       }
     } catch (err) {
       toast.error('Ocurrió un error al intentar iniciar sesión');
