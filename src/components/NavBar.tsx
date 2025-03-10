@@ -59,7 +59,8 @@ const Navbar = () => {
             <Button
               onClick={handleLogout}
               type="button"
-              className="text-white hover:text-gray-300 transition-colors"
+              variant="contained"
+              className="bg-red-500 hover:bg-red-600"
             >
               Cerrar Sesión
             </Button>

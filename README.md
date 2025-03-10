@@ -23,7 +23,7 @@ Este proyecto es una aplicación web moderna construida con Next.js 15, Material
 
 1. Clona el repositorio:
 ```bash
-git clone <url-del-repositorio>
+git clone https://github.com/jwilsonar/pb01_project_frontend.git
 cd client
 ```
 

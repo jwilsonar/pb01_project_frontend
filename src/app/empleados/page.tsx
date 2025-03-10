@@ -15,6 +15,7 @@ interface Employee {
     first_name: string;
     last_name: string;
     email: string;
+    documents: any[];
     documents_count: number;
     created_by: {
         id: number;
@@ -135,7 +136,7 @@ export default function EmpleadosPage() {
     };
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
             <Toaster 
                 position="top-right"
                 toastOptions={{
@@ -144,6 +145,8 @@ export default function EmpleadosPage() {
                         style: {
                             background: '#4caf50',
                             color: '#fff',
+                            borderRadius: '8px',
+                            padding: '16px',
                         },
                     },
                     error: {
@@ -151,47 +154,87 @@ export default function EmpleadosPage() {
                         style: {
                             background: '#ef5350',
                             color: '#fff',
+                            borderRadius: '8px',
+                            padding: '16px',
                         },
                     },
                 }}
             />
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Empleados</h1>
-                <Button 
-                    variant="contained" 
-                    startIcon={<AddIcon />}
-                    onClick={() => setOpenModal(true)}
-                >
-                    Alta de empleado
-                </Button>
-            </div>
-            
-            {loading && <p>Cargando empleados...</p>}
-            
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {error}
+            <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                    <h1 className="text-3xl font-bold text-gray-900">Empleados</h1>
+                    <Button 
+                        variant="contained" 
+                        startIcon={<AddIcon />}
+                        onClick={() => setOpenModal(true)}
+                        sx={{
+                            backgroundColor: '#1976d2',
+                            '&:hover': {
+                                backgroundColor: '#1565c0',
+                            },
+                            borderRadius: '8px',
+                            textTransform: 'none',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        }}
+                    >
+                        Alta de empleado
+                    </Button>
                 </div>
-            )}
-            
-            {!loading && !error && empleados.length === 0 && (
-                <p>No hay empleados para mostrar.</p>
-            )}
-            
-            {!loading && !error && empleados.length > 0 && (
-                <EmpleadosTable 
-                    empleados={empleados}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                />
-            )}
+                
+                {loading && (
+                    <div className="flex justify-center items-center min-h-[200px]">
+                        <div className="animate-pulse flex space-x-4">
+                            <div className="h-12 w-12 rounded-full bg-blue-200"></div>
+                            <div className="space-y-3">
+                                <div className="h-4 w-[200px] bg-blue-200 rounded"></div>
+                                <div className="h-4 w-[150px] bg-blue-200 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {error && (
+                    <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-lg">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700">{error}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {!loading && !error && empleados.length === 0 && (
+                    <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <h3 className="mt-2 text-sm font-medium text-gray-900">No hay empleados</h3>
+                        <p className="mt-1 text-sm text-gray-500">Comienza agregando un nuevo empleado.</p>
+                    </div>
+                )}
+                
+                {!loading && !error && empleados.length > 0 && (
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <EmpleadosTable 
+                            empleados={empleados}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                        />
+                    </div>
+                )}
 
-            <EmpleadoForm 
-                open={openModal}
-                onClose={handleCloseModal}
-                onSubmit={handleSubmit}
-                empleado={selectedEmpleado}
-            />
+                <EmpleadoForm 
+                    open={openModal}
+                    onClose={handleCloseModal}
+                    onSubmit={handleSubmit}
+                    empleado={selectedEmpleado}
+                />
+            </div>
         </div>
     );
 }
