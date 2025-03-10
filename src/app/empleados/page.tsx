@@ -115,9 +115,7 @@ export default function EmpleadosPage() {
                     'Content-Type': 'application/json'
                 }
             });
-            console.log(response);
             const data = await response.json();
-            console.log(data);
             if (!response.ok) {
                 toast.error(data.message || 'Error al eliminar el empleado');
                 return;
@@ -164,7 +162,7 @@ export default function EmpleadosPage() {
                     startIcon={<AddIcon />}
                     onClick={() => setOpenModal(true)}
                 >
-                    Agregar Empleado
+                    Alta de empleado
                 </Button>
             </div>
             

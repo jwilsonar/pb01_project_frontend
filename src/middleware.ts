@@ -42,7 +42,7 @@ export default async function middleware(req: NextRequest) {
     }
   );
 
-  return authMiddleware(req);
+  return authMiddleware(req, NextResponse.next());
 }
 
 export const config = {
@@ -50,6 +50,5 @@ export const config = {
     '/',
     '/empleados/:path*',
     '/mi-perfil/:path*',
-    // Agrega aquí más rutas protegidas según necesites
   ],
 }; 

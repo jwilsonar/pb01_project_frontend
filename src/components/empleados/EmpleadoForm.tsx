@@ -13,7 +13,11 @@ import {
     Typography,
     Divider
 } from '@mui/material';
-
+import { documentService } from '../../services/documentService';
+import VisualizadorDocs from '../../components/VisualizadorDocs';
+import { DocumentType } from '../../interfaces/documents';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 interface FormErrors {
     // Campos de usuario
     email?: string;
@@ -48,6 +52,7 @@ interface Employee {
     first_name: string;
     last_name: string;
     email: string;
+    documents: any[];
     documents_count: number;
     created_by: {
         id: number;
@@ -56,7 +61,10 @@ interface Employee {
 }
 
 export default function EmpleadoForm({ open, onClose, onSubmit, empleado }: EmpleadoFormProps) {
+    const { data: session } = useSession();
+    const router = useRouter();
     const [formErrors, setFormErrors] = useState<FormErrors>({});
+    const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
     const [formData, setFormData] = useState<EmpleadoFormData>({
         email: '',
         password: '',
@@ -65,6 +73,19 @@ export default function EmpleadoForm({ open, onClose, onSubmit, empleado }: Empl
         job_title: '',
         salary: 0,
     });
+
+    useEffect(() => {
+        const fetchDocumentTypes = async () => {
+            try {
+                const types = await documentService.getDocumentTypes(localStorage.getItem('token') || '');
+                setDocumentTypes(types);
+            } catch (error) {
+                console.error('Error al cargar tipos de documentos:', error);
+            }
+        };
+
+        fetchDocumentTypes();
+    }, []);
 
     useEffect(() => {
         if (empleado) {
@@ -203,8 +224,49 @@ export default function EmpleadoForm({ open, onClose, onSubmit, empleado }: Empl
         }
     };
 
+    const handleDeleteDocument = async (documentId: number) => {
+        try {
+            await documentService.deleteDocument(
+                documentId, 
+                session?.accessToken || ''
+            );
+            
+            // Actualizar la lista de documentos localmente
+            if (empleado) {
+                const updatedDocuments = empleado.documents.filter(doc => doc.id !== documentId);
+                empleado.documents = updatedDocuments;
+                // Forzar actualización del componente
+                setFormData(prev => ({ ...prev }));
+            }
+        } catch (error) {
+            console.error('Error al eliminar documento:', error);
+        }
+    };
+
+    const handleUploadDocument = async (file: File, documentTypeId: number) => {
+        if (!empleado?.id) return;
+        
+        try {
+            const newDocument = await documentService.uploadDocument(
+                file,
+                empleado.id,
+                documentTypeId,
+                session?.accessToken || ''
+            );
+            
+            // Actualizar la lista de documentos localmente
+            if (empleado) {
+                empleado.documents = [...empleado.documents, newDocument];
+                // Forzar actualización del componente
+                setFormData(prev => ({ ...prev }));
+            }
+        } catch (error) {
+            console.error('Error al subir documento:', error);
+        }
+    };
+
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
             <DialogTitle>
                 {empleado ? 'Editar Empleado' : 'Agregar Nuevo Empleado'}
             </DialogTitle>
@@ -284,6 +346,19 @@ export default function EmpleadoForm({ open, onClose, onSubmit, empleado }: Empl
                             inputProps={{ min: "0", step: "0.01" }}
                             fullWidth
                         />
+
+                        {empleado && (
+                            <>
+                                <Divider sx={{ my: 2 }} />
+                                <VisualizadorDocs
+                                    employeeId={empleado.id}
+                                    documentTypes={documentTypes}
+                                    documents={empleado.documents || []}
+                                    onDeleteDocument={handleDeleteDocument}
+                                    onUploadDocument={handleUploadDocument}
+                                />
+                            </>
+                        )}
                     </Box>
                 </DialogContent>
                 <DialogActions>

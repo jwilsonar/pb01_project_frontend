@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { 
     Box, 
     IconButton, 
@@ -14,7 +14,9 @@ import {
     Tooltip,
     Modal,
     Fade,
-    Button
+    Button,
+    Snackbar,
+    Alert
 } from '@mui/material';
 import { 
     Delete as DeleteIcon,
@@ -50,13 +52,35 @@ interface Props {
 export default function VisualizadorDocs({ 
     employeeId, 
     documentTypes, 
-    documents = [], 
+    documents: initialDocuments = [], 
     onDeleteDocument,
     onUploadDocument 
 }: Props) {
+    const [documents, setDocuments] = useState<Document[]>(initialDocuments);
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingDocId, setLoadingDocId] = useState<number | null>(null);
     const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+    const [notification, setNotification] = useState<{
+        open: boolean;
+        message: string;
+        severity: 'success' | 'error';
+    }>({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
+
+    const showNotification = (message: string, severity: 'success' | 'error') => {
+        setNotification({
+            open: true,
+            message,
+            severity
+        });
+    };
+
+    const handleCloseNotification = () => {
+        setNotification(prev => ({ ...prev, open: false }));
+    };
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, documentTypeId: number) => {
         const file = event.target.files?.[0];
@@ -64,8 +88,18 @@ export default function VisualizadorDocs({
             setLoading(true);
             try {
                 await onUploadDocument(file, documentTypeId);
+                // Actualizar el estado local con el nuevo documento
+                const newDocument = {
+                    id: Date.now(), // ID temporal hasta que se actualice la página
+                    document_name: file.name,
+                    document_url: URL.createObjectURL(file),
+                    document_type: documentTypes.find(type => type.id === documentTypeId) || { id: documentTypeId, name: '' }
+                };
+                setDocuments(prev => [...prev, newDocument]);
+                showNotification('Documento subido exitosamente', 'success');
             } catch (error) {
                 console.error('Error al subir el documento:', error);
+                showNotification('Error al subir el documento', 'error');
             } finally {
                 setLoading(false);
             }
@@ -76,8 +110,12 @@ export default function VisualizadorDocs({
         setLoadingDocId(documentId);
         try {
             await onDeleteDocument(documentId);
+            // Actualizar el estado local eliminando el documento
+            setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+            showNotification('Documento eliminado exitosamente', 'success');
         } catch (error) {
             console.error('Error al eliminar el documento:', error);
+            showNotification('Error al eliminar el documento', 'error');
         } finally {
             setLoadingDocId(null);
         }
@@ -267,6 +305,21 @@ export default function VisualizadorDocs({
                     </Box>
                 </Fade>
             </Modal>
+
+            <Snackbar
+                open={notification.open}
+                autoHideDuration={6000}
+                onClose={handleCloseNotification}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert 
+                    onClose={handleCloseNotification} 
+                    severity={notification.severity}
+                    sx={{ width: '100%' }}
+                >
+                    {notification.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 } 

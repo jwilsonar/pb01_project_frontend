@@ -148,7 +148,7 @@ export default function MiPerfil() {
             // @ts-ignore
             const token = session?.accessToken;
             if (!token) return;
-            console.log(file, documentTypeId, token);
+
             const newDocument = await documentService.uploadDocument(
                 file,
                 user.employee.id,
@@ -156,10 +156,15 @@ export default function MiPerfil() {
                 token
             );
             
-            // Primero actualizamos el estado de Next.js
-            router.refresh();
-            // Después recargamos completamente la página
-            window.location.reload();
+            if (user && user.employee) {
+                setUser({
+                    ...user,
+                    employee: {
+                        ...user.employee,
+                        documents: [...user.employee.documents, newDocument]
+                    }
+                });
+            }
         } catch (error) {
             console.error('Error al subir documento:', error);
         }
